@@ -285,6 +285,9 @@ class Radio:
                     for payload in file:
                         self.sendTemperaturePayload(payload.strip("\n"))
                         sleep(15)
+                    file.close()
+            except:
+                pass
 
     def sendEnergy(self):
         """ send availability to self.pubEnergy """
@@ -320,7 +323,10 @@ class Radio:
                     for payload in file:
                         self.sendEnergyPayload(payload.strip("\n"))
                         sleep(15)
-                        
+                    file.close()
+            except:
+                pass
+                            
     def sendControls(self):
         """ send the manual control updates to the server """
 
