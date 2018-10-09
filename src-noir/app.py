@@ -81,7 +81,8 @@ class Container:
     def write_kwhMeter(self, reading):
         "overwrite existing file with the new reading"
         with open(self.kwhFile, 'w+') as file :
-            file.write(f'{reading:.6f}' + "\n")
+            msg = f'{reading:.6f}'
+            file.write(msg + "\n")
             file.close()
 
     def sendControls(self, status, tempset):
