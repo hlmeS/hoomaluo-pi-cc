@@ -148,7 +148,7 @@ class Container:
     def resetEnergyAccumulators(self):
         kwh = self.read_kwhMeter() + self.ace_accum
         self.write_kwhMeter(kwh)
-        self.sendStringToSTM(str(kwh) + "?kwh")
+        self.sendStringToSTM('%.5f' % kwh + "?kwh")
         self.ace_accum = 0
         #self.dce_accum = 0             # no dc component
         self.watts = []
@@ -304,8 +304,8 @@ class Radio:
             watts = sum(self.controller.myContainer.watts) / len(self.controller.myContainer.watts)
         else:
             vrms = irms = watts = 0
-        payload = ('{"ts": '+ str(int(time())) +  ', "ace": ' + str(self.controller.myContainer.ace_accum)
-                    + ', "dce": ' + str(self.controller.myContainer.dce_accum)+
+        payload = ('{"ts": '+ str(int(time())) +  ', "ace": ' + '%.5f' % self.controller.myContainer.ace_accum)
+                    + ', "dce": ' + '%.5f' % self.controller.myContainer.dce_accum) +
                     ', "data": { "watt": ' + '%.5f' % watts + ', "vrms": '+ '%.5f' % vrms + ', "irms": '+ '%.5f' % irms  + ' }}' )
 
         self.sendEnergyPayload(payload)
