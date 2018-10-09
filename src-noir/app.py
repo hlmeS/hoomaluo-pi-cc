@@ -304,10 +304,11 @@ class Radio:
             watts = sum(self.controller.myContainer.watts) / len(self.controller.myContainer.watts)
         else:
             vrms = irms = watts = 0
-        payload = ('{"ts": '+ str(int(time())) +  ', "ace": ' + '%.5f' % self.controller.myContainer.ace_accum
-                    + ', "dce": ' + '%.5f' % self.controller.myContainer.dce_accum +
-                    ', "data": { "watt": ' + '%.5f' % watts + ', "vrms": '+ '%.5f' % vrms + ', "irms": '+ '%.5f' % irms  + ' }}' )
-
+        payload = ('{"ts": '+ str(int(time())) +  ', "kwh": ' +  '%.5f' % self.controller.myContainer.read_kwhMeter()
+                    + ", ace": ' + '%.5f' % self.controller.myContainer.ace_accum
+                    + ', "dce": ' + '%.5f' % self.controller.myContainer.dce_accum
+                    + ', "data": { "watt": ' + '%.5f' % watts + ', "vrms": '+ '%.5f' % vrms
+                    + ', "irms": '+ '%.5f' % irms  + ' }}' )
         self.sendEnergyPayload(payload)
 
     def sendEnergyPayload(self, payload):
@@ -337,7 +338,7 @@ class Radio:
             except:
                 pass
 
-                
+
     def sendControls(self):
         """ send the manual control updates to the server """
 
