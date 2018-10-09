@@ -326,7 +326,7 @@ class Radio:
                     file.close()
             except:
                 pass
-                            
+
     def sendControls(self):
         """ send the manual control updates to the server """
 
@@ -351,6 +351,8 @@ class Radio:
 class Controller:
     def __init__(self):
 
+        config = configparser.ConfigParser()
+        config.read('config.ini')
         #self.radio = config["DEFAULT"]["radio"]
         tempres = int(config["DEFAULT"]["tempres"])
         #self.logMode = int(config["DEFAULT"]["logMode"])
@@ -359,7 +361,7 @@ class Controller:
 
         global debug
         debug = eval(config["DEFAULT"]["debug"])
-        print(debug)
+
 
         # [DEVICE]
         self.devId = config["DEVICE"]["devId"]
@@ -431,8 +433,8 @@ class Controller:
 
 
 def main():
-    global debug
-    debug = True
+    #global debug
+    #debug = True
     myController = Controller()
 
     onButton = Button(5)
