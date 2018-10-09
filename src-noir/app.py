@@ -270,7 +270,7 @@ class Radio:
         self.controller.myContainer.resetTempAccumulators()
 
         filename = self.pubTemp.replace("/", "-") + ".txt"
-        if self.storeTempLocal:
+        if self.storeLocalTemp:
             f = open(filename, 'a+')
             f.write(self.lastTempPayload+"\n")
             f.close()
@@ -308,7 +308,7 @@ class Radio:
         if debug: print("Sent: ", payload , "on", self.pubEnergy, "mid: ", self.midEnergy)
         self.controller.myContainer.resetEnergyAccumulators()
         filename = self.pubEnergy.replace("/", "-") + ".txt"
-        if self.storeEnergyLocal:
+        if self.storeLocalEnergy:
             f = open(filename, 'a+')
             f.write(self.lastEnergyPayload+"\n")
             f.close()
@@ -341,7 +341,7 @@ class Radio:
         res, self.midControls = self.client.publish(self.pubControls, payload, qos=1, retain=False)
         if debug: print("Sent", payload, "on", self.pubControls, "mid: ", self.midControls)
         filename = self.pubTemp.replace("/", "-") + ".txt"
-        if self.storeControlsLocal:
+        if self.storeLocalControls:
             f = open(filename, 'a+')
             f.write(self.lastControlsPayload+"\n")
             f.close()
