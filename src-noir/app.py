@@ -147,8 +147,7 @@ class Container:
     def resetEnergyAccumulators(self):
         kwh = self.read_kwhMeter() + self.ace_accum
         self.write_kwhMeter(kwh)
-        message = ""
-        self.sendBytesToSTM()
+        self.sendToSTM(str(kwh) + "?kwh")
         self.ace_accum = 0
         #self.dce_accum = 0             # no dc component
         self.watts = []
