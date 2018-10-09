@@ -268,7 +268,7 @@ class Radio:
         else:
             temp = 0
         payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + '%.5f' % temp +
-                    '"data": { "status": ' + str(self.controller.status) + ', "setpoint": '+ str(self.controller.setpoint) + ' }}' )
+                    '", data": { "status": ' + str(self.controller.status) + ', "setpoint": '+ str(self.controller.setpoint) + ' }}' )
         self.sendTemperaturePayload(payload)
 
     def sendTemperaturePayload(self, payload):
@@ -391,7 +391,7 @@ class Controller:
         self.myContainer = Container(self.ser, setpoint=self.setpoint, status=self.status)
         self.myRadio = Radio(self.devId, self.custId, self)
 
-        self.scheduler = BackgroundScheduler({'apscheduler.timezone': 'UTC',})
+        self.scheduler = BackgroundScheduler({'apscheduler.timezone': 'HST',})
         self.addJobs()
         self.scheduler.start()
 
@@ -402,7 +402,7 @@ class Controller:
                                 minute='*/'+str(self.temp_interval))
         self.energyReporter = self.scheduler.add_job(self.myRadio.sendEnergy,
                                 'cron',
-                                minute='*/'+str(self.energy_interval))
+                                minute='*/'+str(self.temp_interval))
         self.sendLocalTempFile = self.scheduler.add_job(self.myRadio.sendLocalTemperature,
                                 'cron',
                                 hour=0)
