@@ -379,6 +379,7 @@ class Controller:
         self.temp_interval = tempres     # 15 min
         self.energy_interval = tempres      # 15 min
 
+        self.displayCode = 0
         # self, serialConnection, kwhFilename="kwh-meter.txt", setpoint=38, status=1
         self.myContainer = Container(self.ser, setpoint=self.setpoint, status=self.status)
         self.myRadio = Radio(self.devId, self.custId, self)
