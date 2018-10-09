@@ -81,8 +81,7 @@ class Container:
     def write_kwhMeter(self, reading):
         "overwrite existing file with the new reading"
         with open(self.kwhFile, 'w+') as file :
-            msg = f'{reading:.6f}'
-            file.write(msg + "\n")
+            file.write('%.6f' % reading + "\n")
             file.close()
 
     def sendControls(self, status, tempset):
@@ -268,7 +267,7 @@ class Radio:
             temp = sum(self.controller.myContainer.intakeT) / len(self.controller.myContainer.intakeT)
         else:
             temp = 0
-        payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + f'{temp:.5f}' +
+        payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + '%.5f' % temp +
                     '"data": { "status": ' + str(self.controller.status) + ', "setpoint": '+ str(self.controller.setpoint) + ' }}' )
         self.sendTemperaturePayload(payload)
 
@@ -307,7 +306,7 @@ class Radio:
             vrms = irms = watts = 0
         payload = ('{"ts": '+ str(int(time())) +  ', "ace": ' + str(self.controller.myContainer.ace_accum)
                     + ', "dce": ' + str(self.controller.myContainer.dce_accum)+
-                    ', "data": { "watt": ' + f'{watts:.5f}' + ', "vrms": '+ f'{vrms:.5f}' + ', "irms": '+ f'{irms:.5f}'  + ' }}' )
+                    ', "data": { "watt": ' + '%.5f' % watts + ', "vrms": '+ '%.5f' % vrms + ', "irms": '+ '%.5f' % irms  + ' }}' )
 
         self.sendEnergyPayload(payload)
 
@@ -345,7 +344,7 @@ class Radio:
             mode = '"off"'
             temp = self.controller.setpoint
 
-        payload = '{"mode": ' + mode + ', "temp": ' + f'{temp:.5f}' + '}'
+        payload = '{"mode": ' + mode + ', "temp": ' + '%.5f' % temp + '}'
         res, self.midControls = self.client.publish(self.pubControls, payload, qos=1, retain=False)
         if debug: print("Sent", payload, "on", self.pubControls, "mid: ", self.midControls)
         filename = self.pubTemp.replace("/", "-") + ".txt"
