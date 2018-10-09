@@ -81,7 +81,7 @@ class Container:
     def write_kwhMeter(self, reading):
         "overwrite existing file with the new reading"
         with open(self.kwhFile, 'w+') as file :
-            file.write(str(reading)+"\n")
+            file.write(f'{reading:.6f}'+"\n")
             file.close()
 
     def sendControls(self, status, tempset):
@@ -169,7 +169,8 @@ class Radio:
         # subscriptions
         self.subControls = "maluo_1/cc/set/"+custId+"/"+devId+"/ircontrol"
         self.subSettings = "maluo_1/cc/set/"+custId+"/"+devId+"/info"
-
+        self.subPid = "maluo_1/cc/set/"+custId+"/"+devId+"/pid"
+        self.subCalibrate =  "maluo_1/cc/set/"+custId+"/"+devId+"/calibrate"
         # publishing
         self.pubEnergy = "maluo_1/cc/metering/energy/"+custId+"/"+devId
         self.pubTemp = "maluo_1/cc/metering/temperature/"+custId+"/"+devId
@@ -250,6 +251,12 @@ class Radio:
             self.controller.temp_interval = int(data['temp-res'])
             self.controller.energy_interval = int(data['energy-res'])
             self.controller.updateIntervals()
+
+        elif msg.topic == self.subPid :
+            self.controller.updatePid(data)
+
+        elif msg.topic == self.subCalibrate :
+            self.controller.updateCalibration(data)
         else:
             pass
 
@@ -260,7 +267,7 @@ class Radio:
             temp = sum(self.controller.myContainer.intakeT) / len(self.controller.myContainer.intakeT)
         else:
             temp = 0
-        payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + str(temp) +
+        payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + f'{temp:.5f}' +
                     '"data": { "status": ' + str(self.controller.status) + ', "setpoint": '+ str(self.controller.setpoint) + ' }}' )
         self.sendTemperaturePayload(payload)
 
@@ -299,7 +306,7 @@ class Radio:
             vrms = irms = watts = 0
         payload = ('{"ts": '+ str(int(time())) +  ', "ace": ' + str(self.controller.myContainer.ace_accum)
                     + ', "dce": ' + str(self.controller.myContainer.dce_accum)+
-                    ', "data": { "watt": ' + str(watts) + ', "vrms": '+ str(vrms) + ', "irms": '+ str(irms)  + ' }}' )
+                    ', "data": { "watt": ' + f'{watts:.5f}' + ', "vrms": '+ f'{vrms:.5f}' + ', "irms": '+ f'{irms:.5f}'  + ' }}' )
 
         self.sendEnergyPayload(payload)
 
@@ -337,7 +344,7 @@ class Radio:
             mode = '"off"'
             temp = self.controller.setpoint
 
-        payload = '{"mode": ' + mode + ', "temp": ' + str(temp) + '}'
+        payload = '{"mode": ' + mode + ', "temp": ' + f'{temp:.5f}' + '}'
         res, self.midControls = self.client.publish(self.pubControls, payload, qos=1, retain=False)
         if debug: print("Sent", payload, "on", self.pubControls, "mid: ", self.midControls)
         filename = self.pubTemp.replace("/", "-") + ".txt"
@@ -414,6 +421,18 @@ class Controller:
         for job in self.scheduler.get_jobs():
             job.remove()
         self.addJobs()
+
+    def updatePid(self, data):
+        """ data format: {"kp": _, "ki": _, "kd": _, "int_windup": _, "upper": _, "lower": _ } """
+        message = data["kp"] + "?" + data["ki"] + "?" + data["kd"]
+        message += data["int_windup"] + "?" + data["upper"] + "?"
+        message += data["lower"] + "?pid"
+        self.myContainer.sendStringToSTM(message)
+
+    def updateCalibration(self, data):
+        """ data format : {"vrms": _, "irms": _, "watt": , "dcv": _, "dci": _ } """
+        message = data["vrms"] + "?" + data["irms"] + "?" + data["watt"]
+        message += data["dcv"] + "?" + data["dci"] + "?calibrate"
 
     def buttonUpPushed(self):
         if debug: print("Up button pushed!")
