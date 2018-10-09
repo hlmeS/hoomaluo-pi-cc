@@ -305,7 +305,7 @@ class Radio:
         else:
             vrms = irms = watts = 0
         payload = ('{"ts": '+ str(int(time())) +  ', "kwh": ' +  '%.5f' % self.controller.myContainer.read_kwhMeter()
-                    + ", ace": ' + '%.5f' % self.controller.myContainer.ace_accum
+                    + ', "ace": ' + '%.5f' % self.controller.myContainer.ace_accum
                     + ', "dce": ' + '%.5f' % self.controller.myContainer.dce_accum
                     + ', "data": { "watt": ' + '%.5f' % watts + ', "vrms": '+ '%.5f' % vrms
                     + ', "irms": '+ '%.5f' % irms  + ' }}' )
