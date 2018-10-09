@@ -130,8 +130,8 @@ class Container:
         else: a = json.loads(reading.decode("utf-8")) # turn json string into an object
         if serialDebug: print(a)
         # update temperature
-        self.intakeT.append(a['itemp'])
-        self.coilT.append(a['ctemp'])
+        self.intakeT.append(a['temp'])
+        self.coilT.append(a['temp2'])
 
         # get time interval
         timedelta = ts - self.ts
