@@ -145,7 +145,7 @@ class Container:
         self.watts.append(2*a['awatt'])
 
     def resetEnergyAccumulators(self):
-        kwh = self.read_kwhMeter + self.ace_accum
+        kwh = self.read_kwhMeter() + self.ace_accum
         self.write_kwhMeter(kwh)
         message = ""
         self.sendBytesToSTM()
@@ -256,8 +256,8 @@ class Radio:
     # update
     def sendTemperature(self):
         """ send measurement to self.pubTemp"""
-        if len(self.controller.myContainer.temperature) != 0:
-            temp = sum(self.controller.myContainer.temperature) / len(self.controller.myContainer.temperature)
+        if len(self.controller.myContainer.intakeT) != 0:
+            temp = sum(self.controller.myContainer.intakeT) / len(self.controller.myContainer.temperature)
         else:
             temp = 0
         payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + str(temp) +
