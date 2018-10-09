@@ -326,13 +326,24 @@ class Radio:
         if self.connectionStatus:
             filename = self.pubEnergy.replace("/", "-") + ".txt"
             try:
-                with open(filename, 'r') as file:
-                    for payload in file:
-                        self.sendEnergyPayload(payload.strip("\n"))
-                        sleep(15)
-                    file.close()
+                lines = open(filename, 'r').readlines()
+                for i, line in enumerate(lines[:]):
+                    self.sendEnergyPayload(line.strip("\n"))
+                    del lines[i]
+                    sleep(15)
+
+                open('myfile.txt', 'w').writelines(lines)
+
             except:
                 pass
+
+lines = open('myfile.txt').readlines()
+
+for i, line in enumerate(lines[:]):
+    processLine(line)
+    del lines[i]
+
+open('myfile.txt', 'w').writelines(lines)
 
     def sendControls(self):
         """ send the manual control updates to the server """
