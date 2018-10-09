@@ -402,11 +402,13 @@ class Controller:
                                 minute='*/'+str(self.temp_interval))
         self.energyReporter = self.scheduler.add_job(self.myRadio.sendEnergy,
                                 'cron',
-                                minute='*/'+str(self.temp_interval))
+                                minute='*/'+str(self.energy_interval))
         self.sendLocalTempFile = self.scheduler.add_job(self.myRadio.sendLocalTemperature,
                                 'cron',
                                 hour=0)
-        self.sendLocalEnergyFile = self.scheduler.add_job(self.myRadio.sendLocalEnergy)
+        self.sendLocalEnergyFile = self.scheduler.add_job(self.myRadio.sendLocalEnergy,
+                                'cron',
+                                hour=0)
 
     def updateControls(self, onoff=False, radio=True):
         """ update the control settings """
