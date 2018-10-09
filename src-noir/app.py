@@ -96,6 +96,7 @@ class Container:
             if debug: print("Serial is open. Sending: ", byteArray)
             self.ser.write(byteArray)
         else:
+            self.ser.close()
             try:
                 self.ser.open()
                 if debug: print("Serial is open. Sending: ", byteArray)
@@ -429,7 +430,7 @@ class Controller:
         self.displayCode += 1
         if self.displayCode is 2:
             self.displayCode = 0
-        self.myContainer.sendStringToSTM(str(self.displayCode) + "?" + 0 + "?display")
+        self.myContainer.sendStringToSTM(str(self.displayCode) + "?display")
 
 
 def main():
