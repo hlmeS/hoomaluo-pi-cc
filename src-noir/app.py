@@ -337,14 +337,7 @@ class Radio:
             except:
                 pass
 
-lines = open('myfile.txt').readlines()
-
-for i, line in enumerate(lines[:]):
-    processLine(line)
-    del lines[i]
-
-open('myfile.txt', 'w').writelines(lines)
-
+                
     def sendControls(self):
         """ send the manual control updates to the server """
 
