@@ -214,7 +214,7 @@ class Radio:
         self.client.subscribe(self.subSettings)
 
     def on_disconnect(self, client, userdata, rc):
-        self.connecitonStatus = 0
+        self.connectionnStatus = 0
 
     def on_publish(self, client, userdata, mid):
         """ Callback function that's called on successful delivery (need qos 1 or 2 for this to make sense) """
@@ -278,7 +278,7 @@ class Radio:
         self.lastTempPayload = payload
 
     def sendLocalTemperature(self):
-        if self.connecitonStatus:
+        if self.connectionStatus:
             filename = self.pubTemp.replace("/", "-") + ".txt"
             try:
                 with open(filename, 'r') as file:
@@ -316,7 +316,7 @@ class Radio:
         self.lastEnergyPayload = payload
 
     def sendLocalEnergy(self):
-        if self.connecitonStatus:
+        if self.connectionStatus:
             filename = self.pubEnergy.replace("/", "-") + ".txt"
             try:
                 with open(filename, 'r') as file:
