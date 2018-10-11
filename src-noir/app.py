@@ -357,17 +357,17 @@ class Radio:
     def sendControls(self):
         """ send the manual control updates to the server """
 
-        if self.controller.status = 1:
+        if self.controller.status is 1:
             mode = '"cool3"'
             temp = self.controller.setpoint
-        elif self.controller.status == 2:
+        elif self.controller.status is 2:
             mode = '"defrost"'
             temp = self.controller.defrostTemp
         else:
             mode = '"off"'
             temp = self.controller.setpoint
 
-        payload = '{"mode": ' + mode + ', "temp": ' + '%.5f' % temp + '}'
+        payload = '{"mode": ' + mode + ', "temp": ' + '%.0f' % temp + '}'
         res, self.midControls = self.client.publish(self.pubControls, payload, qos=1, retain=False)
         if debug: print("Sent", payload, "on", self.pubControls, "mid: ", self.midControls)
         filename = self.subControls.replace("/", "-") + ".txt"
