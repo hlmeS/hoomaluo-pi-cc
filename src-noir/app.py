@@ -425,7 +425,7 @@ class Controller:
                                 hour=0)
         self.defrostCoils = self.scheduler.add_job(self.defrostCycle,
                                 'interval',
-                                m=self.defrostInterval)
+                                minutes=self.defrostInterval)
 
     def updateControls(self, onoff=False, radio=True):
         """ update the control settings """
