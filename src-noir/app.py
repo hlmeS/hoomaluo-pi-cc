@@ -246,17 +246,21 @@ class Radio:
         if msg.topic == self.subControls:
             self.controller.setpoint = int(data['temp'])
             status_old = self.controller.status
+            setpoint_old = self.controller.setpoint
+
             if data['mode'] == "auto" or data['mode'] == "cool1" or data['mode'] == "cool2" or data['mode'] == "cool3":
                 self.controller.status = 1
             elif data['mode'] == "off":
                 self.controller.status = 0
             elif data['mode'] == "defrost":
                 self.controller.status = 2
+            if self.controller.status is not status_old or self.controller.setpoint is not setpoint_old:
+                self.controller.updateControls(radio=False)
             #if status_old is 1 and self.controller.status is 1: onoff = False
             #elif status_old is 1 and not self.controller.status is 1 : onoff = True
             #elif status_old is 0 and self.controller.status is 1 : onoff = True
             #else: onoff = False
-            self.controller.updateControls(radio=False)
+
 
         elif msg.topic == self.subSettings :
             self.controller.temp_interval = int(data['temp-res'])
@@ -333,6 +337,7 @@ class Radio:
     def sendEnergyPayload(self, payload):
         res, self.midEnergy = self.client.publish(self.pubEnergy, payload, qos=1, retain=False)
         if debug: print("Sent: ", payload , "on", self.pubEnergy, "mid: ", self.midEnergy)
+
         self.controller.myContainer.resetEnergyAccumulators()
         filename = self.pubEnergy.replace("/", "-") + ".txt"
         if self.storeLocalEnergy:
