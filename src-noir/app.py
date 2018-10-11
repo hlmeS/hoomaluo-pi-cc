@@ -370,12 +370,12 @@ class Radio:
         payload = '{"mode": ' + mode + ', "temp": ' + '%.5f' % temp + '}'
         res, self.midControls = self.client.publish(self.pubControls, payload, qos=1, retain=False)
         if debug: print("Sent", payload, "on", self.pubControls, "mid: ", self.midControls)
-        filename = self.pubTemp.replace("/", "-") + ".txt"
+        filename = self.subControls.replace("/", "-") + ".txt"
         if self.storeLocalControls:
             f = open(filename, 'a+')
             f.write(self.lastControlsPayload+"\n")
             f.close()
-        self.storeControlsTemp = True
+        self.storeLocalControls = True
         self.lastControlsPayload = payload
 
 class Controller:
