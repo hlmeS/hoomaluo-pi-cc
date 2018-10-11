@@ -168,6 +168,8 @@ class Container:
 class Radio:
     def __init__(self, devId, custId, Controller):
 
+        global debug
+        self.debug = debug
         self.devId = devId
         self.custId = custId
 
@@ -205,9 +207,9 @@ class Radio:
         # Need to fix this to attempt reconnect
         try:
             self.client.connect("post.redlab-iot.net", 55100, 60)
-            if debug: print("connection established")
+            if self.debug: print("connection established")
         except:
-            if debug: print("connection failed")
+            if sefl.debug: print("connection failed")
 
         self.client.loop_start()
 
@@ -226,7 +228,7 @@ class Radio:
 
     def on_publish(self, client, userdata, mid):
         """ Callback function that's called on successful delivery (need qos 1 or 2 for this to make sense) """
-        if debug: print("on_publish ... \nuserdata: ", userdata, "\nmid: ", mid)
+        if self.debug: print("on_publish ... \nuserdata: ", userdata, "\nmid: ", mid)
 
         if mid == self.midTemp:
             self.storeLocalTemp = False
@@ -239,7 +241,7 @@ class Radio:
         """ Callback function when client receives message """
 
         data = json.loads(msg.payload.decode("utf-8"))
-        if debug: print("topic: ", msg.topic, " payload:", data)
+        if self.debug: print("topic: ", msg.topic, " payload:", data)
         #print "Received: ", data
         if msg.topic == self.subControls:
             self.controller.setpoint = int(data['temp'])
@@ -248,11 +250,13 @@ class Radio:
                 self.controller.status = 1
             elif data['mode'] == "off":
                 self.controller.status = 0
-            if status_old and self.controller.status: onoff = False
-            elif status_old and not self.controller.status: onoff = True
-            elif not status_old and self.controller.status: onoff = True
-            else: onoff = False
-            self.controller.updateControls(onoff = onoff, radio=False)
+            elif data['mode'] == "defrost":
+                self.controller.status = 2
+            #if status_old is 1 and self.controller.status is 1: onoff = False
+            #elif status_old is 1 and not self.controller.status is 1 : onoff = True
+            #elif status_old is 0 and self.controller.status is 1 : onoff = True
+            #else: onoff = False
+            self.controller.updateControls(radio=False)
 
         elif msg.topic == self.subSettings :
             self.controller.temp_interval = int(data['temp-res'])
@@ -293,9 +297,7 @@ class Radio:
 
         filename = self.pubTemp.replace("/", "-") + ".txt"
         if self.storeLocalTemp:
-            f = open(filename, 'a+')
-            f.write(self.lastTempPayload+"\n")
-            f.close()
+            open(filename, 'a+').writelines(self.lastTempPayload+"\n")
         self.storeLocalTemp = True
         self.lastTempPayload = payload
 
@@ -303,11 +305,13 @@ class Radio:
         if self.connectionStatus:
             filename = self.pubTemp.replace("/", "-") + ".txt"
             try:
-                with open(filename, 'r') as file:
-                    for payload in file:
-                        self.sendTemperaturePayload(payload.strip("\n"))
-                        sleep(15)
-                    file.close()
+                lines = open(filename, 'r').readlines()
+                for i, line in enumerate(lines[:]):
+                    if '{' in line.strip("\n"):
+                        self.sendTemperaturePayload(line.strip("\n"))
+                    del lines[i]
+                    sleep(15)
+                open(filename, 'w').writelines(lines)
             except:
                 pass
 
@@ -332,9 +336,7 @@ class Radio:
         self.controller.myContainer.resetEnergyAccumulators()
         filename = self.pubEnergy.replace("/", "-") + ".txt"
         if self.storeLocalEnergy:
-            f = open(filename, 'a+')
-            f.write(self.lastEnergyPayload+"\n")
-            f.close()
+            open(filename, 'a+').writelines(self.lastEnergyPayload+"\n")
         self.storeLocalEnergy = True
         self.lastEnergyPayload = payload
 
@@ -344,11 +346,12 @@ class Radio:
             try:
                 lines = open(filename, 'r').readlines()
                 for i, line in enumerate(lines[:]):
-                    self.sendEnergyPayload(line.strip("\n"))
+                    if '{' in line.strip("\n"):
+                        self.sendEnergyPayload(line.strip("\n"))
                     del lines[i]
                     sleep(15)
 
-                open('myfile.txt', 'w').writelines(lines)
+                open(filename, 'w+').writelines(lines)
 
             except:
                 pass
@@ -370,11 +373,10 @@ class Radio:
         payload = '{"mode": ' + mode + ', "temp": ' + '%.0f' % temp + '}'
         res, self.midControls = self.client.publish(self.pubControls, payload, qos=1, retain=False)
         if debug: print("Sent", payload, "on", self.pubControls, "mid: ", self.midControls)
+
         filename = self.subControls.replace("/", "-") + ".txt"
         if self.storeLocalControls:
-            f = open(filename, 'a+')
-            f.write(self.lastControlsPayload+"\n")
-            f.close()
+            open(filename, 'a+').writelines(self.lastTempPayload+"\n")
         self.storeLocalControls = True
         self.lastControlsPayload = payload
 
@@ -433,17 +435,17 @@ class Controller:
                                 minute='*/'+str(self.energy_interval))
         self.sendLocalTempFile = self.scheduler.add_job(self.myRadio.sendLocalTemperature,
                                 'cron',
-                                hour=0)
+                                hour=2)
         self.sendLocalEnergyFile = self.scheduler.add_job(self.myRadio.sendLocalEnergy,
                                 'cron',
-                                hour=0)
+                                hour=2)
         self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
                                 'interval',
                                 minutes=self.defrostInterval)
 
     def updateControls(self, onoff=False, radio=True):
         """ update the control settings """
-        if self.status is not 3:
+        if self.status is not 2:
             self.myContainer.sendControls(self.status, self.setpoint)
             #if onoff and self.status: self.myContainer.sendIRcode("cool3", "62")
             #elif onoff and not self.status: self.myContainer.sendIRcode("off", "0")
@@ -481,7 +483,7 @@ class Controller:
                                 minutes=self.defrostInterval)
 
     def startDefrostCycle(self):
-        self.status = 3
+        self.status = 2
         self.myContainer.sendControls(self.status, self.defrostTemp)
         #if onoff and self.status: self.myContainer.sendIRcode("cool3", "62")
         #elif onoff and not self.status: self.myContainer.sendIRcode("off", "0")
