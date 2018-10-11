@@ -407,7 +407,7 @@ class Controller:
         self.defrostInterval = int(config["DEFROST"]["interval"])
         self.defrostLimit = int(config["DEFROST"]["limit"])
         self.defrostDuration = int(config["DEFROST"]["duration"])
-        self.defrostTemp = int(config["DEFROTS"]["temp"])
+        self.defrostTemp = int(config["DEFROST"]["temp"])
 
         self.status = 1                 # will be updated on restart
         self.setpoint = 38              # will be updated on restart
