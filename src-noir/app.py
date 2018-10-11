@@ -480,7 +480,7 @@ class Controller:
                                 'interval',
                                 minutes=self.defrostInterval)
 
-    def startdefrostCycle(self):
+    def startDefrostCycle(self):
         self.status = 3
         self.myContainer.sendControls(self.status, self.defrostTemp)
         #if onoff and self.status: self.myContainer.sendIRcode("cool3", "62")
