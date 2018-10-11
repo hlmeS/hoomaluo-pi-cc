@@ -391,8 +391,8 @@ class Controller:
         #self.serPort = "/dev/ttyACM0" # python -m serial.tools.list_ports
         #self.ser = serial.Serial(self.serPort)  # open serial port
 
-        self.defrostInterval = config["DEFROST"]["interval"]
-        self.defrostLimit = config["DEFROST"]["limit"]
+        self.defrostInterval = int(config["DEFROST"]["interval"])
+        self.defrostLimit = int(config["DEFROST"]["limit"])
         self.defrostFlag = 0
 
         self.status = 1                 # will be updated on restart
