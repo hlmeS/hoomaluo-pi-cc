@@ -171,6 +171,7 @@ class Radio:
         self.subSettings = "maluo_1/cc/set/"+custId+"/"+devId+"/info"
         self.subPid = "maluo_1/cc/set/"+custId+"/"+devId+"/pid"
         self.subCalibrate =  "maluo_1/cc/set/"+custId+"/"+devId+"/calibrate"
+        self.subDefrost = "maluo_1/cc/set/"+custId+"/"+devId+"/defrost"
         # publishing
         self.pubEnergy = "maluo_1/cc/metering/energy/"+custId+"/"+devId
         self.pubTemp = "maluo_1/cc/metering/temperature/"+custId+"/"+devId
@@ -257,6 +258,10 @@ class Radio:
 
         elif msg.topic == self.subCalibrate :
             self.controller.updateCalibration(data)
+
+        elif msg.topic == self.subDefrost :
+            self.controller.updateDefrost(data)
+
         else:
             pass
 
@@ -268,7 +273,7 @@ class Radio:
         else:
             temp = 0
         payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + '%.5f' % temp +
-                    '", data": { "status": ' + str(self.controller.status) + ', "setpoint": '+ str(self.controller.setpoint) + ' }}' )
+                    ', "data": { "status": ' + str(self.controller.status) + ', "setpoint": '+ str(self.controller.setpoint) + ' }}' )
         self.sendTemperaturePayload(payload)
 
     def sendTemperaturePayload(self, payload):
@@ -386,6 +391,10 @@ class Controller:
         #self.serPort = "/dev/ttyACM0" # python -m serial.tools.list_ports
         #self.ser = serial.Serial(self.serPort)  # open serial port
 
+        self.defrostInterval = config["DEFROST"]["interval"]
+        self.defrostLimit = config["DEFROST"]["limit"]
+        self.defrostFlag = 0
+
         self.status = 1                 # will be updated on restart
         self.setpoint = 38              # will be updated on restart
         self.temp_interval = tempres     # 15 min
@@ -414,6 +423,9 @@ class Controller:
         self.sendLocalEnergyFile = self.scheduler.add_job(self.myRadio.sendLocalEnergy,
                                 'cron',
                                 hour=0)
+        self.defrostCoils = self.scheduler.add_job(self.defrostCycle,
+                                'interval',
+                                minute=self.defrostInterval)
 
     def updateControls(self, onoff=False, radio=True):
         """ update the control settings """
@@ -440,6 +452,15 @@ class Controller:
         """ data format : {"vrms": _, "irms": _, "watt": , "dcv": _, "dci": _ } """
         message = data["vrms"] + "?" + data["irms"] + "?" + data["watt"]
         message += data["dcv"] + "?" + data["dci"] + "?calibrate"
+        self.myContainer.sendStringToSTM(message)
+
+    def updateDefrost(self, data):
+        """ data format: {"temp": _, "interval": _ } """
+
+
+    def defrostCycle(self):
+        self.defrostFlag = 1
+        
 
     def buttonUpPushed(self):
         if debug: print("Up button pushed!")
