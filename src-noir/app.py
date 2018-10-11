@@ -54,7 +54,7 @@ def f2c(c):
     return (5/9)*(F-32)
 
 class Container:
-    def __init__(self, serialConnection, kwhFilename="kwh-meter.txt", setpoint=38, status=1):
+    def __init__(self, serialConnection, Controller, kwhFilename="kwh-meter.txt", setpoint=38, status=1):
         """ initialize variables """
 
         self.intakeT = []
@@ -67,6 +67,8 @@ class Container:
         self.watts = []
         self.ser = serialConnection
         self.kwhFile = kwhFilename
+        self.controller = Controller
+        self.belowLimitCounter = 0
 
     def read_kwhMeter(self):
         "read and return the current kwh reading"
@@ -133,6 +135,10 @@ class Container:
         # update temperature
         self.intakeT.append(a['temp'])
         self.coilT.append(a['temp2'])
+        if a['temp2'] <= self.controller.defrostLimit:
+            self.belowLimitCounter += 1
+            if self.belowLimitCounter == 5:
+                self.controller.startDefrost()
 
         # get time interval
         timedelta = ts - self.ts
@@ -270,10 +276,14 @@ class Radio:
         """ send measurement to self.pubTemp"""
         if len(self.controller.myContainer.intakeT) != 0:
             temp = sum(self.controller.myContainer.intakeT) / len(self.controller.myContainer.intakeT)
+            coilT = sum(self.controller.myContainer.coilT) / len(self.controller.myContainer.coilT)
         else:
-            temp = 0
-        payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + '%.5f' % temp +
-                    ', "data": { "status": ' + str(self.controller.status) + ', "setpoint": '+ str(self.controller.setpoint) + ' }}' )
+            temp = coilT = 0
+
+        payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + '%.3f' % temp +
+                    ', "data": { "status": ' + str(self.controller.status)
+                    + ', "setpoint": '+ str(self.controller.setpoint)
+                    + ', "coilT": ' + '%0.3f' %coilT +  ' }}' )
         self.sendTemperaturePayload(payload)
 
     def sendTemperaturePayload(self, payload):
@@ -347,9 +357,12 @@ class Radio:
     def sendControls(self):
         """ send the manual control updates to the server """
 
-        if self.controller.status:
+        if self.controller.status = 1:
             mode = '"cool3"'
             temp = self.controller.setpoint
+        elif self.controller.status == 2:
+            mode = '"defrost"'
+            temp = self.controller.defrostTemp
         else:
             mode = '"off"'
             temp = self.controller.setpoint
@@ -393,7 +406,8 @@ class Controller:
 
         self.defrostInterval = int(config["DEFROST"]["interval"])
         self.defrostLimit = int(config["DEFROST"]["limit"])
-        self.defrostFlag = 0
+        self.defrostDuration = int(config["DEFROST"]["duration"])
+        self.defrostTemp = int(config["DEFROTS"]["temp"])
 
         self.status = 1                 # will be updated on restart
         self.setpoint = 38              # will be updated on restart
@@ -402,7 +416,7 @@ class Controller:
 
         self.displayCode = 0
         # self, serialConnection, kwhFilename="kwh-meter.txt", setpoint=38, status=1
-        self.myContainer = Container(self.ser, setpoint=self.setpoint, status=self.status)
+        self.myContainer = Container(self.ser, self, setpoint=self.setpoint, status=self.status, )
         self.myRadio = Radio(self.devId, self.custId, self)
 
         self.scheduler = BackgroundScheduler({'apscheduler.timezone': 'HST',})
@@ -423,17 +437,18 @@ class Controller:
         self.sendLocalEnergyFile = self.scheduler.add_job(self.myRadio.sendLocalEnergy,
                                 'cron',
                                 hour=0)
-        self.defrostCoils = self.scheduler.add_job(self.defrostCycle,
+        self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
                                 'interval',
                                 minutes=self.defrostInterval)
 
     def updateControls(self, onoff=False, radio=True):
         """ update the control settings """
-        self.myContainer.sendControls(self.status, self.setpoint)
-        #if onoff and self.status: self.myContainer.sendIRcode("cool3", "62")
-        #elif onoff and not self.status: self.myContainer.sendIRcode("off", "0")
-        if radio:
-            self.myRadio.sendControls()
+        if self.status is not 3:
+            self.myContainer.sendControls(self.status, self.setpoint)
+            #if onoff and self.status: self.myContainer.sendIRcode("cool3", "62")
+            #elif onoff and not self.status: self.myContainer.sendIRcode("off", "0")
+            if radio:
+                self.myRadio.sendControls()
 
     def updateIntervals(self):
         """ update the intervals for sending temperature and energy """
@@ -456,10 +471,33 @@ class Controller:
 
     def updateDefrost(self, data):
         """ data format: {"temp": _, "interval": _ } """
+        self.defrostInterval = data["interval"]
+        self.defrostLimit = data["limit"]
+        self.defrostDuration = data["duration"]
+        self.defrostTemp = data["temp"]
+        self.startDefrost.remove()
+        self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
+                                'interval',
+                                minutes=self.defrostInterval)
 
+    def startdefrostCycle(self):
+        self.status = 3
+        self.myContainer.sendControls(self.status, self.defrostTemp)
+        #if onoff and self.status: self.myContainer.sendIRcode("cool3", "62")
+        #elif onoff and not self.status: self.myContainer.sendIRcode("off", "0")
+        if radio:
+            self.myRadio.sendControls()
 
-    def defrostCycle(self):
-        self.defrostFlag = 1
+        self.stopDefrost = self.scheduler.add_job(self.stopDefrostCycle,
+                                'date',
+                                rundate=datetime.now()+datetime.timedelta(minutes=15))
+
+    def stopDefrostCycle(self):
+        self.myContainer.belowLimitCounter = 0
+        self.status = 1
+        self.myContainer.sendControls(self.status, self.setpoint)
+        if radio:
+            self.myRadio.sendControls()
 
 
     def buttonUpPushed(self):
