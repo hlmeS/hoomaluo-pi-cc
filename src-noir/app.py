@@ -477,7 +477,7 @@ class Controller:
 
     def updateCalibration(self, data):
         """ data format : {"vrms": _, "irms": _, "watt": , "dcv": _, "dci": _ } """
-        message = str(data["vrms"]) + "?" + str(data["irms"]) + "?" + str(data["watt"])
+        message = '%.12f' % data["vrms"] + "?" + '%.12f' %data["irms"] + "?" + str(data["watt"])
         message += str(data["dcv"]) + "?" + str(data["dci"]) + "?calibrate"
         self.writeSettingsToFile(self.calibrationConfigFile, data)
         self.myContainer.sendStringToSTM(message)
