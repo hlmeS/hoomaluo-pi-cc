@@ -173,10 +173,10 @@ class Container:
                     print("cannot")
                     print("could not process string")
         else:
-            b = json.loads(reading.decode("utf-8").replace('\r\n', ''))
-            self.processJSONformat(ts, b)
-            try:
 
+            try:
+                b = json.loads(reading.decode("utf-8").replace('\r\n', ''))
+                self.processJSONformat(ts, b)
                 if serialDebug:
                     print (reading)
 
@@ -188,7 +188,7 @@ class Container:
 
 
 
-    def processJSONformat(self, a):
+    def processJSONformat(self, ts, a):
         # update temperature
         self.intakeT.append(a['temp'])
         self.coilT.append(a['temp2'])
