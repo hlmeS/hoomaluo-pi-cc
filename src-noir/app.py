@@ -134,10 +134,13 @@ class Container:
                 if self.debug: print("trying 1")
                 self.processReading(ser.read_until(), int(time()), True) # adjust character based on code
             except :
+                sleep(30)
                 try:
                     if self.debug: print("trying 2")
                     self.processReading(ser.read_until('\n'), int(time()), True) # adjust character based on code
+
                 except:
+                    sleep(30)
                     if port is locations[0]:
                         port = locations[1]
                     else:
@@ -146,7 +149,7 @@ class Container:
                         if self.debug: print("trying 3")
                         ser = serial.Serial(port)
                         self.processReading(ser.read_until('\n'), int(time()), True )
-                    except :
+                    except :v
                         if self.debug: "this is not working ... bye bye. "
                         sys.exit()
 
