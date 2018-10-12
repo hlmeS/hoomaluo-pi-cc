@@ -106,7 +106,7 @@ class Container:
                 if self.debug: print("Serial is open. Trying to send: ", byteArray)
                 self.controller.ser.write(byteArray)
             except:
-                if self.debug: print("Cannot open port.")
+                if self.debug: print("Cannot open port. Trying again after switching ports. ")
                 if self.controller.serPort is self.controller.serialLocations[0]:
                     self.controller.serPort = self.controller.serialLocations[1]
                 else:
@@ -122,12 +122,13 @@ class Container:
         "read temp and energy from the STM ... comes in as a json object I think"
         while True:
             try:
+                
                 self.processReading(ser.read_until(), int(time()), True) # adjust character based on code
             except serial.serialutil.SerialException:
                 ser.close()
                 try:
                     ser.open()
-                    self.processReading(ser.read_until('\n'), int(time())) # adjust character based on code
+                    self.processReading(ser.read_until('\n'), int(time()), True) # adjust character based on code
                 except serial.serialutil.SerialException:
                     if port is locations[0]:
                         port = locations[1]
@@ -136,7 +137,7 @@ class Container:
                     try:
                         ser = serial.Serial(port)
                         ser.open()
-                        self.processReading(ser.read_until('\n'), int(time()))
+                        self.processReading(ser.read_until('\n'), int(time()), True )
                     except serial.serialutil.SerialException:
                         if self.debug: "this is not working ... bye bye. "
                         sys.exit()
