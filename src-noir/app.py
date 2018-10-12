@@ -178,9 +178,10 @@ class Container:
                 a = json.loads(reading.decode("utf-8").strip("\n").strip("\r")) # turn json string into an object
                 self.processJSONformat(a)
             except:
-                print ("no can")
                 if serialDebug:
                     print("could not process byte string")
+                    print ("no can")
+                    print(reading.decode("utf-8").strip("\n").strip("\r"))
 
 
 
