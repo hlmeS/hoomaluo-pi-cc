@@ -590,10 +590,9 @@ class Controller:
 
         self.stopDefrost = self.scheduler.add_job(self.stopDefrostCycle,
                                 'date',
-                                rundate=datetime.now()+datetime.timedelta(minutes=15))
+                                run_date=datetime.datetime.now()+datetime.timedelta(minutes=15))
 
     def stopDefrostCycle(self):
-        self.myContainer.belowLimitCounter = 0
         self.status = 1
         self.myContainer.sendControls(self.status, self.setpoint)
         if radio:
@@ -641,7 +640,7 @@ def main():
         while True:
             sleep(10)
 
-    except (KeyboardInterrupt, SystemExit, ):
+    except (KeyboardInterrupt, SystemExit ):
         # Not strictly necessary if daemonic mode is enabled but should be done if possible
         myController.scheduler.shutdown()
         myController.ser.close()
