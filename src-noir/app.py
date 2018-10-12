@@ -95,14 +95,15 @@ class Container:
         self.sendBytesToSTM(message.encode("utf-8"))
 
     def sendBytesToSTM(self, byteArray):
-        if self.controller.ser.is_open:
-            if self.debug: print("Serial is open. Sending: ", byteArray)
+        try:
+            if self.debug: print("Trying to send : ", byteArray)
             self.controller.ser.write(byteArray)
-        else:
+        except:
+
             self.controller.ser.close()
             try:
                 self.controller.ser.open()
-                if self.debug: print("Serial is open. Sending: ", byteArray)
+                if self.debug: print("Serial is open. Trying to send: ", byteArray)
                 self.controller.ser.write(byteArray)
             except:
                 if self.debug: print("Cannot open port.")
@@ -121,7 +122,7 @@ class Container:
         "read temp and energy from the STM ... comes in as a json object I think"
         while True:
             try:
-                self.processReading(ser.read_until(), int(time())) # adjust character based on code
+                self.processReading(ser.read_until(), int(time()), True) # adjust character based on code
             except serial.serialutil.SerialException:
                 ser.close()
                 try:
