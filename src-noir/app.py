@@ -165,22 +165,20 @@ class Container:
 
         if isinstance(type(reading), str):
             try:
-                print (reading)
+                if serialDebug: print (reading)
                 a = json.loads(reading)
                 self.processJSONformat(a)
             except:
-                print ("cannot")
                 if serialDebug:
+                    print("cannot")
                     print("could not process string")
         else:
-            a = reading.decode("utf-8").replace('\r\n', '')
-            b = json.loads(a)
-            self.processJSONformat(b)
+
             try:
-                print (reading)
-                #a = reading.decode("utf-8").replace('\r\n', '')
-                #b = json.loads(a)
-                #a = json.loads(str(reading.decode("utf-8").strip("\n").strip("\r"))) # turn json string into an object
+                b = json.loads(reading.decode("utf-8").replace('\r\n', ''))
+                self.processJSONformat(ts, b)
+                if serialDebug:
+                    print (reading)
 
             except:
                 if serialDebug:
