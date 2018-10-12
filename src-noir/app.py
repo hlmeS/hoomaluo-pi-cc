@@ -398,14 +398,14 @@ class Controller:
         self.custId = config["DEVICE"]["custId"]
         #devType = config["DEVICE"]["devType"]
 
+        self.pidConfigFile = "pid-settings.txt"
+        self.defrostConfigFile = "defrost-settings.txt"
+        self.calibrationConfigFile = "calibration-settings.txt"
+
         defrost = json.loads(open(self.defrostConfigFile, "r").readlines()[0].strip("\n"))
         self.defrostInterval = defrost["interval"]
         self.defrostDuration = defrost["duration"]
         self.defrostTemp = defrost["temp"]
-
-        self.pidConfigFile = "pid-settings.txt"
-        self.defrostConfigFile = "defrost-settings.txt"
-        self.configurationFile = "configuration-settings.txt"
 
         self.status = 1                 # will be updated on restart
         self.setpoint = 38              # will be updated on restart
@@ -471,14 +471,16 @@ class Controller:
         message = data["kp"] + "?" + data["ki"] + "?" + data["kd"]
         message += data["int_windup"] + "?" + data["upper"] + "?"
         message += data["lower"] + "?pid"
-        open("pid-settings.txt", "w+").writelines(data)
+
+        self.writeSettingsToFile(self.pidConfigFile, data)
+        
         self.myContainer.sendStringToSTM(message)
 
     def updateCalibration(self, data):
         """ data format : {"vrms": _, "irms": _, "watt": , "dcv": _, "dci": _ } """
         message = data["vrms"] + "?" + data["irms"] + "?" + data["watt"]
         message += data["dcv"] + "?" + data["dci"] + "?calibrate"
-        open("calibration-settings.txt", "w+").writelines(data)
+        self.writeSettingsToFile(self.calibratioConfigFile, data)
         self.myContainer.sendStringToSTM(message)
 
     def updateDefrost(self, data):
@@ -486,10 +488,20 @@ class Controller:
         self.defrostInterval = data["interval"]
         self.defrostDuration = data["duration"]
         self.defrostTemp = data["temp"]
+
+        self.writeSettingsToFile(self.defrostConfigFile, data)
+
         self.startDefrost.remove()
         self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
                                 'interval',
                                 minutes=self.defrostInterval)
+
+    def self.writeSettingsToFile(self, filename, data):
+        try:
+            open(filename, "w+").writelines(data)
+        except:
+            if debug:
+                print("cannot write "+filename+" file")
 
     def startDefrostCycle(self):
         self.status = 2
