@@ -111,7 +111,7 @@ class Container:
     def readSTM(self, ser, port, locations):
         "read temp and energy from the STM ... comes in as a json object I think"
         while True:
-            try ser.is_open:
+            try:
                 self.processReading(ser.read_until(), int(time())) # adjust character based on code
             except serial.serialutil.SerialException:
                 ser.close()
@@ -126,6 +126,7 @@ class Container:
                     try:
                         ser = serial.Serial(port)
                         ser.open()
+                        self.processReading(ser.read_until('\n'), int(time()))
                     except serial.serialutil.SerialException:
                         sys.exit()
 
