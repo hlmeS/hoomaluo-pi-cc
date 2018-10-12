@@ -175,7 +175,7 @@ class Container:
         else:
             try:
                 print (reading)
-                a = json.loads(reading.decode("utf-8")) # turn json string into an object
+                a = json.loads(reading.strip("\n").decode("utf-8")) # turn json string into an object
                 self.processJSONformat(a)
             except:
                 print ("no can")
