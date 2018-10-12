@@ -165,20 +165,24 @@ class Container:
 
         if isinstance(type(reading), str):
             try:
+                print (reading)
                 a = json.loads(reading)
                 self.processJSONformat(a)
             except:
+                print ("cannot")
                 if serialDebug:
                     print("could not process string")
         else:
             try:
+                print (reading)
                 a = json.loads(reading.decode("utf-8")) # turn json string into an object
                 self.processJSONformat(a)
             except:
+                print ("no can")
                 if serialDebug:
                     print("could not process byte string")
 
-        
+
 
     def processJSONformat(self, a):
         # update temperature
