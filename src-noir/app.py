@@ -175,7 +175,7 @@ class Container:
         else:
             try:
                 print (reading)
-                a = json.loads(reading.decode("utf-8").strip("\n").strip("\r")) # turn json string into an object
+                a = json.loads(str(reading.decode("utf-8").strip("\n").strip("\r"))) # turn json string into an object
                 self.processJSONformat(a)
             except:
                 if serialDebug:
