@@ -69,7 +69,7 @@ class Container:
         self.ser = serialConnection
         self.kwhFile = kwhFilename
         self.controller = Controller
-        self.belowLimitCounter = 0
+        #self.belowLimitCounter = 0
 
     def read_kwhMeter(self):
         "read and return the current kwh reading"
@@ -136,10 +136,10 @@ class Container:
         # update temperature
         self.intakeT.append(a['temp'])
         self.coilT.append(a['temp2'])
-        if a['temp2'] <= self.controller.defrostLimit:
-            self.belowLimitCounter += 1
-            if self.belowLimitCounter == 5:
-                self.controller.startDefrost()
+        #if a['temp2'] <= self.controller.defrostLimit:
+        #    self.belowLimitCounter += 1
+        #    if self.belowLimitCounter == 5:
+        #        self.controller.startDefrost()
 
         # get time interval
         timedelta = ts - self.ts
@@ -148,8 +148,8 @@ class Container:
         # calculate energies
         self.ace_accum = timedelta * (2*a['awatt']) / (3600.0 * 1000)    # watt-hour
         #self.dce_accum =                     # watt-hour
-        self.irms.append(a['airms']+a['birms'])
-        self.vrms.append(a['avrms']+a['bvrms'])
+        self.irms.append(a['airms'])
+        self.vrms.append(a['avrms'])
         self.watts.append(2*a['awatt'])
 
     def resetEnergyAccumulators(self):
@@ -417,10 +417,17 @@ class Controller:
         self.defrostDuration = int(config["DEFROST"]["duration"])
         self.defrostTemp = int(config["DEFROST"]["temp"])
 
+        self.pidConfigFile = "pid-settings.txt"
+        self.defrostConfigFile = "defrost-settings.txt"
+        self.configurationFile = "configuration-settings.txt"
+
         self.status = 1                 # will be updated on restart
         self.setpoint = 38              # will be updated on restart
         self.temp_interval = tempres     # 15 min
         self.energy_interval = tempres      # 15 min
+
+        self.lowTempLimit = 34
+        self.upTempLimit = 60
 
         self.displayCode = 0
         # self, serialConnection, kwhFilename="kwh-meter.txt", setpoint=38, status=1
@@ -430,6 +437,9 @@ class Controller:
         self.scheduler = BackgroundScheduler({'apscheduler.timezone': 'HST',})
         self.addJobs()
         self.scheduler.start()
+
+        sleep(30)
+        self.initialConfigs()
 
     def addJobs(self):
         if debug: print("added jobs")
@@ -448,6 +458,14 @@ class Controller:
         self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
                                 'interval',
                                 minutes=self.defrostInterval)
+
+    def initialConfigs(self):
+        defrost = json.loads(open(self.defrostConfigFile, "r").readlines()[0].strip("\n"))
+        self.updateDefrost()
+        pid = json.loads(open(self.pidConfigFile, "r").readlines()[0].strip("\n"))
+        self.updatePid()
+        calibration = json.loads(open(self.confiConfigFile, "r").readlines()[0].strip("\n"))
+        self.updateCalibration()
 
     def updateControls(self, onoff=False, radio=True):
         """ update the control settings """
@@ -469,18 +487,20 @@ class Controller:
         message = data["kp"] + "?" + data["ki"] + "?" + data["kd"]
         message += data["int_windup"] + "?" + data["upper"] + "?"
         message += data["lower"] + "?pid"
+        open("pid-settings.txt", "w+").writelines(data)
         self.myContainer.sendStringToSTM(message)
 
     def updateCalibration(self, data):
         """ data format : {"vrms": _, "irms": _, "watt": , "dcv": _, "dci": _ } """
         message = data["vrms"] + "?" + data["irms"] + "?" + data["watt"]
         message += data["dcv"] + "?" + data["dci"] + "?calibrate"
+        open("calibration-settings.txt", "w+").writelines(data)
         self.myContainer.sendStringToSTM(message)
 
     def updateDefrost(self, data):
-        """ data format: {"temp": _, "interval": _ } """
+        """ data format: {"temp": _, "interval": _ , "duration": _} """
         self.defrostInterval = data["interval"]
-        self.defrostLimit = data["limit"]
+        #self.defrostLimit = data["limit"]
         self.defrostDuration = data["duration"]
         self.defrostTemp = data["temp"]
         self.startDefrost.remove()
@@ -511,11 +531,13 @@ class Controller:
     def buttonUpPushed(self):
         if debug: print("Up button pushed!")
         self.setpoint += 1
+        if self.setpoint > self.upTempLimit: self.setpoint = self.upTempLimit
         self.updateControls()
 
     def buttonDownPushed(self):
         if debug: print("Down button pushed!")
         self.setpoint -= 1
+        if self.setpoint < self.lowTempLimit: self.setpoint = self.lowTempLimit
         self.updateControls()
 
     def buttonOnPushed(self):
