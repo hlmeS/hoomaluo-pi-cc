@@ -591,7 +591,6 @@ class Controller:
         self.stopDefrost = self.scheduler.add_job(self.stopDefrostCycle,
                                 'date',
                                 run_date=datetime.datetime.now()+datetime.timedelta(minutes=15))
-
     def stopDefrostCycle(self):
         self.status = 1
         self.myContainer.sendControls(self.status, self.setpoint)
