@@ -66,7 +66,7 @@ class Container:
         self.irms = []
         self.vrms = []
         self.watts = []
-        self.ser = serialConnection
+        #self.ser = serialConnection
         self.kwhFile = kwhFilename
         self.controller = Controller
         #self.belowLimitCounter = 0
@@ -95,17 +95,26 @@ class Container:
         self.sendBytesToSTM(message.encode("utf-8"))
 
     def sendBytesToSTM(self, byteArray):
-        if self.ser.is_open:
+        if self.controller.ser.is_open:
             if self.debug: print("Serial is open. Sending: ", byteArray)
-            self.ser.write(byteArray)
+            self.controller.ser.write(byteArray)
         else:
-            self.ser.close()
+            self.controller.ser.close()
             try:
-                self.ser.open()
+                self.controller.ser.open()
                 if self.debug: print("Serial is open. Sending: ", byteArray)
-                self.ser.write(byteArray)
+                self.controller.ser.write(byteArray)
             except:
                 if self.debug: print("Cannot open port.")
+                if self.controller.serPort is self.controller.serialLocations[0]:
+                    self.controller.serPort = self.controller.serialLocations[1]
+                else:
+                    self.controller.serPort = self.controller.serialLocations[0]
+                try:
+                    self.controller.ser = serial.Serial(self.controller.serPort)
+                except:
+                    if self.debug: print("Didn't work, shutting down")
+                    sys.exit()
                 """ TODO: need some routine to try again if failed """
 
     def readSTM(self, ser, port, locations):
@@ -412,7 +421,7 @@ class Controller:
             self.ser = serial.Serial(self.serPort)  # open serial port
         except serial.serialutil.SerialException:
             if debug: print("wrong serial")
-            
+
         try:
             self.serPort = self.serialLocations[1]
             self.ser = serial.Serial(self.serPort)
