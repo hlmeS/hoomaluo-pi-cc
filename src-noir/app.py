@@ -445,8 +445,8 @@ class Controller:
                                 minutes=self.defrostInterval)
 
     def initialConfigs(self):
-        calibration = json.loads(open(self.calibrationConfigFile, "r").readlines()[0].strip("\n"))
-        self.updateCalibration(calibration)
+        #calibration = json.loads(open(self.calibrationConfigFile, "r").readlines()[0].strip("\n"))
+        #self.updateCalibration(calibration)
         pid = json.loads(open(self.pidConfigFile, "r").readlines()[0].strip("\n"))
         self.updatePid(pid)
 
@@ -472,7 +472,7 @@ class Controller:
         message += str(data["int_windup"]) + "?" + str(data["upper"]) + "?"
         message += str(data["lower"]) + "?pid"
         self.myContainer.sendStringToSTM(message)
-        self.writeSettingsToFile(self.pidConfigFile, data)
+        self.writeSettingsToFile(self.pidConfigFile, json.dumps(data))
 
 
     def updateCalibration(self, data):
@@ -481,7 +481,7 @@ class Controller:
         message += str(data["dcv"]) + "?" + str(data["dci"]) + "?calibrate"
 
         self.myContainer.sendStringToSTM(message)
-        self.writeSettingsToFile(self.calibrationConfigFile, data)
+        self.writeSettingsToFile(self.calibrationConfigFile, json.dumps(data))
 
     def updateDefrost(self, data):
         """ data format: {"temp": _, "interval": _ , "duration": _} """
@@ -489,7 +489,7 @@ class Controller:
         self.defrostDuration = data["duration"]
         self.defrostTemp = data["temp"]
 
-        self.writeSettingsToFile(self.defrostConfigFile, data)
+        self.writeSettingsToFile(self.defrostConfigFile, json.dumps(data))
 
         self.startDefrost.remove()
         self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
