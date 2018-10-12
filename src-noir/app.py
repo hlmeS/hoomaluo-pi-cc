@@ -137,6 +137,7 @@ class Container:
                         ser.open()
                         self.processReading(ser.read_until('\n'), int(time()))
                     except serial.serialutil.SerialException:
+                        if self.debug: "this is not working ... bye bye. "
                         sys.exit()
 
                 """ TODO: need some routine to try again if failed """
@@ -426,6 +427,7 @@ class Controller:
             self.serPort = self.serialLocations[1]
             self.ser = serial.Serial(self.serPort)
         except serial.serialutil.SerialException:
+            if debug: print("not working, shutting down.")
             sys.exit()
 
 
