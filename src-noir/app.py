@@ -173,10 +173,10 @@ class Container:
                     print("cannot")
                     print("could not process string")
         else:
-
+            b = json.loads(reading.decode("utf-8").replace('\r\n', ''))
+            self.processJSONformat(ts, b)
             try:
-                b = json.loads(reading.decode("utf-8").replace('\r\n', ''))
-                self.processJSONformat(ts, b)
+
                 if serialDebug:
                     print (reading)
 
