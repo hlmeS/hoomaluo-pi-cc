@@ -200,6 +200,7 @@ class Radio:
 
         self.client.on_connect = self.on_connect
         self.client.on_message = self.on_message
+        self.client.on_publish = self.on_publish
 
         # Need to fix this to attempt reconnect
         try:
@@ -380,7 +381,7 @@ class Radio:
 
         filename = self.subControls.replace("/", "-") + ".txt"
         if self.storeLocalControls:
-            open(filename, 'a+').writelines(self.lastTempPayload+"\n")
+            open(filename, 'a+').writelines(self.lastControlsPayload+"\n")
         self.storeLocalControls = True
         self.lastControlsPayload = payload
 
