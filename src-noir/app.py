@@ -108,17 +108,27 @@ class Container:
                 if self.debug: print("Cannot open port.")
                 """ TODO: need some routine to try again if failed """
 
-    def readSTM(self, ser):
+    def readSTM(self, ser, port, locations):
         "read temp and energy from the STM ... comes in as a json object I think"
         while True:
-            if ser.is_open:
+            try ser.is_open:
                 self.processReading(ser.read_until(), int(time())) # adjust character based on code
-            else:
+            except serial.serialutil.SerialException:
+                ser.close()
                 try:
                     ser.open()
                     self.processReading(ser.read_until('\n'), int(time())) # adjust character based on code
-                except:
-                    if self.debug: print("Cannot read from port .")
+                except serial.serialutil.SerialException:
+                    if port is locations[0]:
+                        port = locations[1]
+                    else :
+                        port = locations[0]
+                    try:
+                        ser = serial.Serial(port)
+                        ser.open()
+                    except serial.serialutil.SerialException:
+                        sys.exit()
+
                 """ TODO: need some routine to try again if failed """
 
     def processReading(self, reading, ts, serialDebug=False):
@@ -392,7 +402,20 @@ class Controller:
         config.read('config.ini')
         tempres = int(config["DEFAULT"]["tempres"])
         self.serPort = config["DEFAULT"]["serPort"]
-        self.ser = serial.Serial(self.serPort)  # open serial port
+        self.serialLocations = locations=['/dev/ttyACM0', '/dev/ttyACM1']
+        try:
+            self.ser = serial.Serial(self.serPort)  # open serial port
+        except serial.serialutil.SerialException:
+            if self.serPort is self.serialLocations[0]:
+                self.serPort = self.serialLocations[1]
+            else :
+                self.serPort = self.serialLocations[0]
+            try:
+                self.ser = serial.Serial(self.serPort)
+            except serial.serialutil.SerialException:
+                sys.exit()
+
+
 
         global debug
         debug = eval(config["DEFAULT"]["debug"])
@@ -560,7 +583,7 @@ def main():
     upButton.when_pressed = myController.buttonUpPushed
     downButton.when_pressed = myController.buttonDownPushed
 
-    ser_thread = threading.Thread(target=myController.myContainer.readSTM, args = [myController.ser])
+    ser_thread = threading.Thread(target=myController.myContainer.readSTM, args=[myController.ser, myController.serPort, myController.serialLocations])
     print("start serial read thread")
     ser_thread.start()
 
