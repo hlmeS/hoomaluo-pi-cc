@@ -479,7 +479,7 @@ class Controller:
         """ data format : {"vrms": _, "irms": _, "watt": , "dcv": _, "dci": _ } """
         message = str(data["vrms"]) + "?" + str(data["irms"]) + "?" + str(data["watt"])
         message += str(data["dcv"]) + "?" + str(data["dci"]) + "?calibrate"
-        self.writeSettingsToFile(self.calibratioConfigFile, data)
+        self.writeSettingsToFile(self.calibrationConfigFile, data)
         self.myContainer.sendStringToSTM(message)
 
     def updateDefrost(self, data):
