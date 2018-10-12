@@ -399,27 +399,29 @@ class Radio:
 class Controller:
     def __init__(self):
 
+
         config = configparser.ConfigParser()
         config.read('config.ini')
+        global debug
+        debug = eval(config["DEFAULT"]["debug"])
+
         tempres = int(config["DEFAULT"]["tempres"])
         self.serPort = config["DEFAULT"]["serPort"]
         self.serialLocations = locations=['/dev/ttyACM0', '/dev/ttyACM1']
         try:
             self.ser = serial.Serial(self.serPort)  # open serial port
         except serial.serialutil.SerialException:
-            if self.serPort is self.serialLocations[0]:
-                self.serPort = self.serialLocations[1]
-            else :
-                self.serPort = self.serialLocations[0]
-            try:
-                self.ser = serial.Serial(self.serPort)
-            except serial.serialutil.SerialException:
-                sys.exit()
+            if debug: print("wrong serial")
+            
+        try:
+            self.serPort = self.serialLocations[1]
+            self.ser = serial.Serial(self.serPort)
+        except serial.serialutil.SerialException:
+            sys.exit()
 
 
 
-        global debug
-        debug = eval(config["DEFAULT"]["debug"])
+
 
         # [DEVICE]
         self.devId = config["DEVICE"]["devId"]
