@@ -423,12 +423,12 @@ class Controller:
         except serial.serialutil.SerialException:
             if debug: print("wrong serial")
 
-        try:
-            self.serPort = self.serialLocations[1]
-            self.ser = serial.Serial(self.serPort)
-        except serial.serialutil.SerialException:
-            if debug: print("not working, shutting down.")
-            sys.exit()
+            try:
+                self.serPort = self.serialLocations[1]
+                self.ser = serial.Serial(self.serPort)
+            except serial.serialutil.SerialException:
+                if debug: print("not working, shutting down.")
+                sys.exit()
 
 
 
