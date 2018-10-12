@@ -467,9 +467,9 @@ class Controller:
 
     def updatePid(self, data):
         """ data format: {"kp": _, "ki": _, "kd": _, "int_windup": _, "upper": _, "lower": _ } """
-        message = data["kp"] + "?" + data["ki"] + "?" + data["kd"]
-        message += data["int_windup"] + "?" + data["upper"] + "?"
-        message += data["lower"] + "?pid"
+        message = str(data["kp"]) + "?" + str(data["ki"]) + "?" + str(data["kd"])
+        message += str(data["int_windup"]) + "?" + str(data["upper"]) + "?"
+        message += str(data["lower"]) + "?pid"
 
         self.writeSettingsToFile(self.pidConfigFile, data)
 
@@ -477,8 +477,8 @@ class Controller:
 
     def updateCalibration(self, data):
         """ data format : {"vrms": _, "irms": _, "watt": , "dcv": _, "dci": _ } """
-        message = data["vrms"] + "?" + data["irms"] + "?" + data["watt"]
-        message += data["dcv"] + "?" + data["dci"] + "?calibrate"
+        message = str(data["vrms"]) + "?" + str(data["irms"]) + "?" + str(data["watt"])
+        message += str(data["dcv"]) + "?" + str(data["dci"]) + "?calibrate"
         self.writeSettingsToFile(self.calibratioConfigFile, data)
         self.myContainer.sendStringToSTM(message)
 
