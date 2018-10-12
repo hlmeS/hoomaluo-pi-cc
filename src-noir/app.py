@@ -131,25 +131,23 @@ class Container:
         "read temp and energy from the STM ... comes in as a json object I think"
         while True:
             try:
-                ser.open()
+                if self.debug: print("trying 1")
                 self.processReading(ser.read_until(), int(time()), True) # adjust character based on code
             except :
-                ser.close()
                 try:
-                    ser.open()
+                    if self.debug: print("trying 2")
                     self.processReading(ser.read_until('\n'), int(time()), True) # adjust character based on code
                 except:
-                    ser.close()
                     if port is locations[0]:
                         port = locations[1]
                     else:
                         port = locations[0]
                     try:
+                        if self.debug: print("trying 3")
                         ser = serial.Serial(port)
                         self.processReading(ser.read_until('\n'), int(time()), True )
                     except :
                         if self.debug: "this is not working ... bye bye. "
-                        ser.close()
                         sys.exit()
 
                 """ TODO: need some routine to try again if failed """
