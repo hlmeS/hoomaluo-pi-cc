@@ -472,15 +472,16 @@ class Controller:
         message += str(data["int_windup"]) + "?" + str(data["upper"]) + "?"
         message += str(data["lower"]) + "?pid"
         self.myContainer.sendStringToSTM(message)
-        self.writeSettingsToFile(self.pidConfigFile, message)
+        self.writeSettingsToFile(self.pidConfigFile, json.dumps(data))
 
 
     def updateCalibration(self, data):
         """ data format : {"vrms": _, "irms": _, "watt": , "dcv": _, "dci": _ } """
-        message = '%.12f' % data["vrms"] + "?" + '%.12f' %data["irms"] + "?" + str(data["watt"])
+        message = str(data["vrms"]) + "?" + str(data["irms"]) + "?" + str(data["watt"])
         message += str(data["dcv"]) + "?" + str(data["dci"]) + "?calibrate"
+
         self.myContainer.sendStringToSTM(message)
-        self.writeSettingsToFile(self.calibrationConfigFile, message)
+        self.writeSettingsToFile(self.calibrationConfigFile, json.dumps(data))
 
     def updateDefrost(self, data):
         """ data format: {"temp": _, "interval": _ , "duration": _} """
