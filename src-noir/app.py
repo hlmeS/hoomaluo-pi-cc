@@ -178,7 +178,7 @@ class Container:
                 if serialDebug:
                     print("could not process byte string")
 
-        if serialDebug: print(a)
+        
 
     def processJSONformat(self, a):
         # update temperature
