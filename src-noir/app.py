@@ -99,20 +99,29 @@ class Container:
             if self.debug: print("Trying to send : ", byteArray)
             self.controller.ser.write(byteArray)
         except:
-
             self.controller.ser.close()
+
+            if self.debug: print("Cannot open port. Trying again after switching ports. ")
+            if self.controller.serPort is self.controller.serialLocations[0]:
+                self.controller.serPort = self.controller.serialLocations[1]
+            else:
+                self.controller.serPort = self.controller.serialLocations[0]
+
             try:
-                self.controller.ser.open()
+                self.controller.ser = serial.Serial(self.controller.serPort)
                 if self.debug: print("Serial is open. Trying to send: ", byteArray)
                 self.controller.ser.write(byteArray)
+
             except:
-                if self.debug: print("Cannot open port. Trying again after switching ports. ")
+                if self.debug: print("Cannot open port. Trying again (2nd) after switching ports. ")
                 if self.controller.serPort is self.controller.serialLocations[0]:
                     self.controller.serPort = self.controller.serialLocations[1]
                 else:
                     self.controller.serPort = self.controller.serialLocations[0]
                 try:
                     self.controller.ser = serial.Serial(self.controller.serPort)
+                    if self.debug: print("Serial is open. Trying to send: ", byteArray)
+                    self.controller.ser.write(byteArray)
                 except:
                     if self.debug: print("Didn't work, shutting down")
                     sys.exit()
@@ -122,7 +131,7 @@ class Container:
         "read temp and energy from the STM ... comes in as a json object I think"
         while True:
             try:
-                
+
                 self.processReading(ser.read_until(), int(time()), True) # adjust character based on code
             except serial.serialutil.SerialException:
                 ser.close()
@@ -153,9 +162,25 @@ class Container:
         if serialDebug:
             print(reading)
             print(type(reading))
-        if isinstance(type(reading), str): a = json.loads(reading)
-        else: a = json.loads(reading.decode("utf-8")) # turn json string into an object
+
+        if isinstance(type(reading), str):
+            try:
+                a = json.loads(reading)
+                self.processJSONformat(a)
+            except:
+                if serialDebug:
+                    print("could not process string")
+        else:
+            try:
+                a = json.loads(reading.decode("utf-8")) # turn json string into an object
+                self.processJSONformat(a)
+            except:
+                if serialDebug:
+                    print("could not process byte string")
+
         if serialDebug: print(a)
+
+    def processJSONformat(self, a):
         # update temperature
         self.intakeT.append(a['temp'])
         self.coilT.append(a['temp2'])
