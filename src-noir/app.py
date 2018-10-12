@@ -424,7 +424,6 @@ class Controller:
         self.addJobs()
         self.scheduler.start()
 
-        sleep(30)
         self.initialConfigs()
 
     def addJobs(self):
@@ -447,9 +446,9 @@ class Controller:
 
     def initialConfigs(self):
         pid = json.loads(open(self.pidConfigFile, "r").readlines()[0].strip("\n"))
-        self.updatePid()
+        self.updatePid(pid)
         calibration = json.loads(open(self.confiConfigFile, "r").readlines()[0].strip("\n"))
-        self.updateCalibration()
+        self.updateCalibration(calibration)
 
     def updateControls(self, onoff=False, radio=True):
         """ update the control settings """
