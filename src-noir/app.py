@@ -447,7 +447,7 @@ class Controller:
     def initialConfigs(self):
         pid = json.loads(open(self.pidConfigFile, "r").readlines()[0].strip("\n"))
         self.updatePid(pid)
-        calibration = json.loads(open(self.confiConfigFile, "r").readlines()[0].strip("\n"))
+        calibration = json.loads(open(self.calibrationConfigFile, "r").readlines()[0].strip("\n"))
         self.updateCalibration(calibration)
 
     def updateControls(self, onoff=False, radio=True):
