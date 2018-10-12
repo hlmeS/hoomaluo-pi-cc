@@ -136,10 +136,6 @@ class Container:
         # update temperature
         self.intakeT.append(a['temp'])
         self.coilT.append(a['temp2'])
-        #if a['temp2'] <= self.controller.defrostLimit:
-        #    self.belowLimitCounter += 1
-        #    if self.belowLimitCounter == 5:
-        #        self.controller.startDefrost()
 
         # get time interval
         timedelta = ts - self.ts
@@ -362,7 +358,6 @@ class Radio:
             except:
                 pass
 
-
     def sendControls(self):
         """ send the manual control updates to the server """
 
@@ -391,31 +386,22 @@ class Controller:
 
         config = configparser.ConfigParser()
         config.read('config.ini')
-        #self.radio = config["DEFAULT"]["radio"]
         tempres = int(config["DEFAULT"]["tempres"])
-        #self.logMode = int(config["DEFAULT"]["logMode"])
         self.serPort = config["DEFAULT"]["serPort"]
         self.ser = serial.Serial(self.serPort)  # open serial port
 
         global debug
         debug = eval(config["DEFAULT"]["debug"])
 
-
         # [DEVICE]
         self.devId = config["DEVICE"]["devId"]
         self.custId = config["DEVICE"]["custId"]
         #devType = config["DEVICE"]["devType"]
 
-        #devId = os.environ["devId"]
-        #self.devId = "101"  # temporary
-        ##self.custId = "101" # temporary
-        #self.serPort = "/dev/ttyACM0" # python -m serial.tools.list_ports
-        #self.ser = serial.Serial(self.serPort)  # open serial port
-
-        self.defrostInterval = int(config["DEFROST"]["interval"])
-        self.defrostLimit = int(config["DEFROST"]["limit"])
-        self.defrostDuration = int(config["DEFROST"]["duration"])
-        self.defrostTemp = int(config["DEFROST"]["temp"])
+        defrost = json.loads(open(self.defrostConfigFile, "r").readlines()[0].strip("\n"))
+        self.defrostInterval = defrost["interval"]
+        self.defrostDuration = defrost["duration"]
+        self.defrostTemp = defrost["temp"]
 
         self.pidConfigFile = "pid-settings.txt"
         self.defrostConfigFile = "defrost-settings.txt"
@@ -460,8 +446,6 @@ class Controller:
                                 minutes=self.defrostInterval)
 
     def initialConfigs(self):
-        defrost = json.loads(open(self.defrostConfigFile, "r").readlines()[0].strip("\n"))
-        self.updateDefrost()
         pid = json.loads(open(self.pidConfigFile, "r").readlines()[0].strip("\n"))
         self.updatePid()
         calibration = json.loads(open(self.confiConfigFile, "r").readlines()[0].strip("\n"))
@@ -500,7 +484,6 @@ class Controller:
     def updateDefrost(self, data):
         """ data format: {"temp": _, "interval": _ , "duration": _} """
         self.defrostInterval = data["interval"]
-        #self.defrostLimit = data["limit"]
         self.defrostDuration = data["duration"]
         self.defrostTemp = data["temp"]
         self.startDefrost.remove()
@@ -572,6 +555,7 @@ def main():
     except (KeyboardInterrupt, SystemExit):
         # Not strictly necessary if daemonic mode is enabled but should be done if possible
         myController.scheduler.shutdown()
+        myController.ser.close()
 
 if __name__ == "__main__":
     main()
