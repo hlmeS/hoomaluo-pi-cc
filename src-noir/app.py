@@ -112,11 +112,11 @@ class Container:
         "read temp and energy from the STM ... comes in as a json object I think"
         while True:
             if ser.is_open:
-                self.processReading(ser.read_until(), int(time()), True) # adjust character based on code
+                self.processReading(ser.read_until(), int(time())) # adjust character based on code
             else:
                 try:
                     ser.open()
-                    self.processReading(ser.read_until('\n'), int(time()), True) # adjust character based on code
+                    self.processReading(ser.read_until('\n'), int(time())) # adjust character based on code
                 except:
                     if self.debug: print("Cannot read from port .")
                 """ TODO: need some routine to try again if failed """
@@ -219,6 +219,9 @@ class Radio:
         sleep(2)                # quick delay
         self.client.subscribe(self.subControls)
         self.client.subscribe(self.subSettings)
+        self.client.subscribe(self.subPid)
+        self.client.subscribe(self.subDefrost)
+        #self.client.subscribe(self.subCalibrate)
 
     def on_disconnect(self, client, userdata, rc):
         self.connectionnStatus = 0
