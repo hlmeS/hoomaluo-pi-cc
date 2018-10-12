@@ -56,7 +56,8 @@ def f2c(c):
 class Container:
     def __init__(self, serialConnection, Controller, kwhFilename="kwh-meter.txt", setpoint=38, status=1):
         """ initialize variables """
-
+        global debug
+        self.debug = debug
         self.intakeT = []
         self.coilT = []
         self.ts = int(time())
@@ -95,29 +96,29 @@ class Container:
 
     def sendBytesToSTM(self, byteArray):
         if self.ser.is_open:
-            if debug: print("Serial is open. Sending: ", byteArray)
+            if self.debug: print("Serial is open. Sending: ", byteArray)
             self.ser.write(byteArray)
         else:
             self.ser.close()
             try:
                 self.ser.open()
-                if debug: print("Serial is open. Sending: ", byteArray)
+                if self.debug: print("Serial is open. Sending: ", byteArray)
                 self.ser.write(byteArray)
             except:
-                if debug: print("Cannot open port.")
+                if self.debug: print("Cannot open port.")
                 """ TODO: need some routine to try again if failed """
 
     def readSTM(self, ser):
         "read temp and energy from the STM ... comes in as a json object I think"
         while True:
             if ser.is_open:
-                self.processReading(ser.read_until(), int(time())) # adjust character based on code
+                self.processReading(ser.read_until(), int(time()), True) # adjust character based on code
             else:
                 try:
                     ser.open()
-                    self.processReading(ser.read_until('\n'), int(time())) # adjust character based on code
+                    self.processReading(ser.read_until('\n'), int(time()), True) # adjust character based on code
                 except:
-                    if debug: print("Cannot read from port .")
+                    if self.debug: print("Cannot read from port .")
                 """ TODO: need some routine to try again if failed """
 
     def processReading(self, reading, ts, serialDebug=False):
