@@ -449,7 +449,7 @@ class Controller:
         self.updateCalibration(calibration)
         pid = json.loads(open(self.pidConfigFile, "r").readlines()[0].strip("\n"))
         self.updatePid(pid)
-        
+
 
     def updateControls(self, onoff=False, radio=True):
         """ update the control settings """
@@ -472,7 +472,7 @@ class Controller:
         message += str(data["int_windup"]) + "?" + str(data["upper"]) + "?"
         message += str(data["lower"]) + "?pid"
         self.myContainer.sendStringToSTM(message)
-        self.writeSettingsToFile(self.pidConfigFile, data)
+        self.writeSettingsToFile(self.pidConfigFile, message)
 
 
     def updateCalibration(self, data):
@@ -480,7 +480,7 @@ class Controller:
         message = '%.12f' % data["vrms"] + "?" + '%.12f' %data["irms"] + "?" + str(data["watt"])
         message += str(data["dcv"]) + "?" + str(data["dci"]) + "?calibrate"
         self.myContainer.sendStringToSTM(message)
-        self.writeSettingsToFile(self.calibrationConfigFile, data)
+        self.writeSettingsToFile(self.calibrationConfigFile, message)
 
     def updateDefrost(self, data):
         """ data format: {"temp": _, "interval": _ , "duration": _} """
