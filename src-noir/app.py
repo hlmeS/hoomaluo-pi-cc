@@ -176,7 +176,7 @@ class Container:
             try:
                 print (reading)
                 a = reading.decode("utf-8").replace('\r\n', '')
-                b = json.loads(a)
+                b = json.loads(a, strict=False)
                 #a = json.loads(str(reading.decode("utf-8").strip("\n").strip("\r"))) # turn json string into an object
                 self.processJSONformat(b)
             except:
