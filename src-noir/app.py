@@ -407,9 +407,9 @@ class Controller:
         self.calibrationConfigFile = "calibration-settings.txt"
 
         defrost = json.loads(open(self.defrostConfigFile, "r").readlines()[0].strip("\n"))
-        self.defrostInterval = defrost["interval"]
-        self.defrostDuration = defrost["duration"]
-        self.defrostTemp = defrost["temp"]
+        self.defrostInterval = int(defrost["interval"])
+        self.defrostDuration = int(defrost["duration"])
+        self.defrostTemp = int(defrost["temp"])
 
         self.status = 1                 # will be updated on restart
         self.setpoint = 38              # will be updated on restart
