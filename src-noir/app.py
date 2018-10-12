@@ -149,7 +149,7 @@ class Container:
                         if self.debug: print("trying 3")
                         ser = serial.Serial(port)
                         self.processReading(ser.read_until('\n'), int(time()), True )
-                    except :v
+                    except :
                         if self.debug: "this is not working ... bye bye. "
                         sys.exit()
 
