@@ -473,7 +473,7 @@ class Controller:
         message += data["lower"] + "?pid"
 
         self.writeSettingsToFile(self.pidConfigFile, data)
-        
+
         self.myContainer.sendStringToSTM(message)
 
     def updateCalibration(self, data):
@@ -496,7 +496,7 @@ class Controller:
                                 'interval',
                                 minutes=self.defrostInterval)
 
-    def self.writeSettingsToFile(self, filename, data):
+    def writeSettingsToFile(self, filename, data):
         try:
             open(filename, "w+").writelines(data)
         except:
