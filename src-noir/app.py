@@ -131,24 +131,25 @@ class Container:
         "read temp and energy from the STM ... comes in as a json object I think"
         while True:
             try:
-
+                ser.open()
                 self.processReading(ser.read_until(), int(time()), True) # adjust character based on code
-            except serial.serialutil.SerialException:
+            except :
                 ser.close()
                 try:
                     ser.open()
                     self.processReading(ser.read_until('\n'), int(time()), True) # adjust character based on code
-                except serial.serialutil.SerialException:
+                except:
+                    ser.close()
                     if port is locations[0]:
                         port = locations[1]
-                    else :
+                    else:
                         port = locations[0]
                     try:
                         ser = serial.Serial(port)
-                        ser.open()
                         self.processReading(ser.read_until('\n'), int(time()), True )
-                    except serial.serialutil.SerialException:
+                    except :
                         if self.debug: "this is not working ... bye bye. "
+                        ser.close()
                         sys.exit()
 
                 """ TODO: need some routine to try again if failed """
@@ -165,7 +166,6 @@ class Container:
 
         if isinstance(type(reading), str):
             try:
-                if serialDebug: print (reading)
                 a = json.loads(reading)
                 self.processJSONformat(a)
             except:
@@ -173,18 +173,13 @@ class Container:
                     print("cannot")
                     print("could not process string")
         else:
-
             try:
                 b = json.loads(reading.decode("utf-8").replace('\r\n', ''))
                 self.processJSONformat(ts, b)
-                if serialDebug:
-                    print (reading)
-
             except:
                 if serialDebug:
                     print("could not process byte string")
                     print ("no can")
-                    print(reading.decode("utf-8").strip("\n").strip("\r"))
 
 
 
@@ -452,7 +447,7 @@ class Controller:
 
         tempres = int(config["DEFAULT"]["tempres"])
         self.serPort = config["DEFAULT"]["serPort"]
-        self.serialLocations = locations=['/dev/ttyACM0', '/dev/ttyACM1']
+        self.serialLocations = locations=['/dev/ttyACM0', '/dev/ttyACM1', '/dev/ttyACM2']
         try:
             self.ser = serial.Serial(self.serPort)  # open serial port
         except serial.serialutil.SerialException:
@@ -462,8 +457,12 @@ class Controller:
                 self.serPort = self.serialLocations[1]
                 self.ser = serial.Serial(self.serPort)
             except serial.serialutil.SerialException:
-                if debug: print("not working, shutting down.")
-                sys.exit()
+                try:
+                    self.serPort = self.serialLocations[2]
+                    self.ser = serial.Serial(self.serPort)
+                except serial.serialutil.SerialException:
+                    if debug: print("not working, shutting down.")
+                    sys.exit()
 
 
 
@@ -641,7 +640,7 @@ def main():
         while True:
             sleep(10)
 
-    except (KeyboardInterrupt, SystemExit):
+    except (KeyboardInterrupt, SystemExit, ):
         # Not strictly necessary if daemonic mode is enabled but should be done if possible
         myController.scheduler.shutdown()
         myController.ser.close()
