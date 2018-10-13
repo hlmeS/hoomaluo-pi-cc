@@ -485,7 +485,7 @@ class Controller:
         self.defrostTemp = int(defrost["temp"])
 
         self.status = 1                 # will be updated on restart
-        self.setpoint = 38              # will be updated on restart
+        self.setpoint = 34              # will be updated on restart
         self.temp_interval = tempres     # 15 min
         self.energy_interval = tempres      # 15 min
 
