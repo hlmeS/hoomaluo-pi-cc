@@ -544,7 +544,7 @@ class Controller:
 
     def updatePid(self, data):
         """ data format: {"kp": _, "ki": _, "kd": _, "int_windup": _, "upper": _, "lower": _ } """
-        message = str(data["kp"]) + "?" + str(data["ki"]) + "?" + str(data["kd"])
+        message = str(data["kp"]) + "?" + str(data["ki"]) + "?" + str(data["kd"]) + "?" 
         message += str(data["int_windup"]) + "?" + str(data["upper"]) + "?"
         message += str(data["lower"]) + "?pid"
         self.myContainer.sendStringToSTM(message)
