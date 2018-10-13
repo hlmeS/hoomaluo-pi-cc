@@ -132,12 +132,12 @@ class Container:
         while True:
             try:
                 if self.debug: print("trying 1")
-                self.processReading(ser.read_until(), int(time()), True) # adjust character based on code
+                self.processReading(ser.read_until(), int(time())) # adjust character based on code
             except :
                 sleep(30)
                 try:
                     if self.debug: print("trying 2")
-                    self.processReading(ser.read_until('\n'), int(time()), True) # adjust character based on code
+                    self.processReading(ser.read_until('\n'), int(time())) # adjust character based on code
 
                 except:
                     sleep(30)
@@ -148,7 +148,7 @@ class Container:
                     try:
                         if self.debug: print("trying 3")
                         ser = serial.Serial(port)
-                        self.processReading(ser.read_until('\n'), int(time()), True )
+                        self.processReading(ser.read_until('\n'), int(time()))
                     except :
                         if self.debug: "this is not working ... bye bye. "
                         sys.exit()
