@@ -194,7 +194,7 @@ class Container:
         self.ts = ts
 
         # calculate energies
-        self.ace_accum = timedelta * (2*a['awatt']) / (3600.0 * 1000)    # watt-hour
+        self.ace_accum += timedelta * (2*a['awatt']) / (3600.0 * 1000)    # watt-hour
         #self.dce_accum =                     # watt-hour
         self.irms.append(a['airms'])
         self.vrms.append(a['avrms'])
@@ -544,7 +544,7 @@ class Controller:
 
     def updatePid(self, data):
         """ data format: {"kp": _, "ki": _, "kd": _, "int_windup": _, "upper": _, "lower": _ } """
-        message = str(data["kp"]) + "?" + str(data["ki"]) + "?" + str(data["kd"]) + "?" 
+        message = str(data["kp"]) + "?" + str(data["ki"]) + "?" + str(data["kd"]) + "?"
         message += str(data["int_windup"]) + "?" + str(data["upper"]) + "?"
         message += str(data["lower"]) + "?pid"
         self.myContainer.sendStringToSTM(message)
