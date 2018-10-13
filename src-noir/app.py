@@ -194,7 +194,8 @@ class Container:
         self.ts = ts
 
         # calculate energies
-        self.ace_accum += timedelta * (2*a['awatt']) / (3600.0 * 1000)    # watt-hour
+        if a['awatt'] > 0 :
+            self.ace_accum += timedelta * (2*a['awatt']) / (3600.0 * 1000)    # watt-hour
         #self.dce_accum =                     # watt-hour
         self.irms.append(a['airms'])
         self.vrms.append(a['avrms'])
@@ -516,9 +517,9 @@ class Controller:
         self.sendLocalEnergyFile = self.scheduler.add_job(self.myRadio.sendLocalEnergy,
                                 'cron',
                                 hour=2)
-        self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
-                                'interval',
-                                minutes=self.defrostInterval)
+        #self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
+        #                        'interval',
+        #                        minutes=self.defrostInterval)
 
     def initialConfigs(self):
         #calibration = json.loads(open(self.calibrationConfigFile, "r").readlines()[0].strip("\n"))
@@ -567,10 +568,10 @@ class Controller:
 
         self.writeSettingsToFile(self.defrostConfigFile, json.dumps(data))
 
-        self.startDefrost.remove()
-        self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
-                                'interval',
-                                minutes=self.defrostInterval)
+        #self.startDefrost.remove()
+        #self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
+        #                        'interval',
+        #                        minutes=self.defrostInterval)
 
     def writeSettingsToFile(self, filename, data):
         try:
@@ -623,12 +624,12 @@ def main():
     #debug = True
     myController = Controller()
 
-    onButton = Button(5)
-    upButton = Button(11)
-    downButton = Button(9)
-    onButton.when_pressed = myController.buttonOnPushed
-    upButton.when_pressed = myController.buttonUpPushed
-    downButton.when_pressed = myController.buttonDownPushed
+    #onButton = Button(5)
+    #upButton = Button(11)
+    #downButton = Button(9)
+    #onButton.when_pressed = myController.buttonOnPushed
+    #upButton.when_pressed = myController.buttonUpPushed
+    #downButton.when_pressed = myController.buttonDownPushed
 
     ser_thread = threading.Thread(target=myController.myContainer.readSTM, args=[myController.ser, myController.serPort, myController.serialLocations])
     print("start serial read thread")
