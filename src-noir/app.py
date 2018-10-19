@@ -298,10 +298,11 @@ class Radio:
         if self.debug: print("topic: ", msg.topic, " payload:", data)
         #print "Received: ", data
         if msg.topic == self.subControls:
-            self.controller.setpoint = int(data['temp'])
+
             status_old = self.controller.status
             setpoint_old = self.controller.setpoint
-
+            self.controller.setpoint = int(data['temp'])
+            
             if data['mode'] == "auto" or data['mode'] == "cool1" or data['mode'] == "cool2" or data['mode'] == "cool3":
                 self.controller.status = 1
             elif data['mode'] == "off":
