@@ -302,7 +302,7 @@ class Radio:
             status_old = self.controller.status
             setpoint_old = self.controller.setpoint
             self.controller.setpoint = int(data['temp'])
-            
+
             if data['mode'] == "auto" or data['mode'] == "cool1" or data['mode'] == "cool2" or data['mode'] == "cool3":
                 self.controller.status = 1
             elif data['mode'] == "off":
@@ -361,6 +361,7 @@ class Radio:
         self.lastTempPayload = payload
 
     def sendLocalTemperature(self):
+        """
         if self.connectionStatus:
             filename = self.pubTemp.replace("/", "-") + ".txt"
             try:
@@ -373,6 +374,8 @@ class Radio:
                 open(filename, 'w').writelines(lines)
             except:
                 pass
+        """
+        pass
 
     def sendEnergy(self):
         """ send availability to self.pubEnergy """
@@ -401,6 +404,7 @@ class Radio:
         self.lastEnergyPayload = payload
 
     def sendLocalEnergy(self):
+        """
         if self.connectionStatus:
             filename = self.pubEnergy.replace("/", "-") + ".txt"
             try:
@@ -415,6 +419,8 @@ class Radio:
 
             except:
                 pass
+        """
+        pass
 
     def sendControls(self):
         """ send the manual control updates to the server """
@@ -512,12 +518,12 @@ class Controller:
         self.energyReporter = self.scheduler.add_job(self.myRadio.sendEnergy,
                                 'cron',
                                 minute='*/'+str(self.energy_interval))
-        self.sendLocalTempFile = self.scheduler.add_job(self.myRadio.sendLocalTemperature,
-                                'cron',
-                                hour=2)
-        self.sendLocalEnergyFile = self.scheduler.add_job(self.myRadio.sendLocalEnergy,
-                                'cron',
-                                hour=2)
+        #self.sendLocalTempFile = self.scheduler.add_job(self.myRadio.sendLocalTemperature,
+        #                        'cron',
+        #                        hour=2)
+        #self.sendLocalEnergyFile = self.scheduler.add_job(self.myRadio.sendLocalEnergy,
+        #                        'cron',
+        #                        hour=2)
         #self.startDefrost = self.scheduler.add_job(self.startDefrostCycle,
         #                        'interval',
         #                        minutes=self.defrostInterval)
