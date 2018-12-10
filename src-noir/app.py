@@ -203,7 +203,7 @@ class Container:
         self.irms.append(a['airms'])
         self.vrms.append(a['avrms'])
         self.watts.append(2*a['awatt'])
-        self.pwm.append('pwm')
+        self.pwm.append(a['pwm'])
 
     def resetEnergyAccumulators(self):
         kwh = self.read_kwhMeter() + self.ace_accum
