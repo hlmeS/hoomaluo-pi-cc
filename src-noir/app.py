@@ -60,12 +60,14 @@ class Container:
         self.debug = debug
         self.intakeT = []
         self.coilT = []
+        self.coilT2 = []
         self.ts = int(time())
         self.ace_accum = 0
         self.dce_accum = 0
         self.irms = []
         self.vrms = []
         self.watts = []
+        self.pwm = []
         #self.ser = serialConnection
         self.kwhFile = kwhFilename
         self.controller = Controller
@@ -188,6 +190,7 @@ class Container:
         # update temperature
         self.intakeT.append(a['temp'])
         self.coilT.append(a['temp2'])
+        self.coilT2.append(a['temp3'])
 
         # get time interval
         timedelta = ts - self.ts
@@ -200,6 +203,7 @@ class Container:
         self.irms.append(a['airms'])
         self.vrms.append(a['avrms'])
         self.watts.append(2*a['awatt'])
+        self.pwm.append('pwm')
 
     def resetEnergyAccumulators(self):
         kwh = self.read_kwhMeter() + self.ace_accum
@@ -210,10 +214,12 @@ class Container:
         self.watts = []
         self.irms = []
         self.vrms = []
+        self.pwm = []
 
     def resetTempAccumulators(self):
         self.intakeT = []
         self.coilT = []
+        self.coilT2 = []
 
 class Radio:
     def __init__(self, devId, custId, Controller):
@@ -340,13 +346,15 @@ class Radio:
         if len(self.controller.myContainer.intakeT) != 0:
             temp = sum(self.controller.myContainer.intakeT) / len(self.controller.myContainer.intakeT)
             coilT = sum(self.controller.myContainer.coilT) / len(self.controller.myContainer.coilT)
+            coilT2 = sum(self.controller.myContainer.coilT2) / len(self.controller.myContainer.coilT2)
         else:
-            temp = coilT = 0
+            temp = coilT = coilT2 = 0
 
         payload = ('{"ts": '+ str(int(time())) +  ', "temp":' + '%.3f' % temp +
                     ', "data": { "status": ' + str(self.controller.status)
                     + ', "setpoint": '+ str(self.controller.setpoint)
-                    + ', "coilT": ' + '%0.3f' %coilT +  ' }}' )
+                    + ', "coilT": ' + '%0.3f' %coilT
+                    + ', "coilT2": ' + '%0.3f' %coilT2 +  ' }}' )
         self.sendTemperaturePayload(payload)
 
     def sendTemperaturePayload(self, payload):
@@ -383,13 +391,15 @@ class Radio:
             vrms = sum(self.controller.myContainer.vrms) / len(self.controller.myContainer.vrms)
             irms = sum(self.controller.myContainer.irms) / len(self.controller.myContainer.irms)
             watts = sum(self.controller.myContainer.watts) / len(self.controller.myContainer.watts)
+            pwm = sum(self.controller.myContainer.pwm) / len(self.controller.myContainer.pwm)
         else:
             vrms = irms = watts = 0
         payload = ('{"ts": '+ str(int(time())) +  ', "kwh": ' +  '%.5f' % self.controller.myContainer.read_kwhMeter()
                     + ', "ace": ' + '%.5f' % self.controller.myContainer.ace_accum
                     + ', "dce": ' + '%.5f' % self.controller.myContainer.dce_accum
                     + ', "data": { "watt": ' + '%.5f' % watts + ', "vrms": '+ '%.5f' % vrms
-                    + ', "irms": '+ '%.5f' % irms  + ' }}' )
+                    + ', "irms": '+ '%.5f' % irms
+                    + ', "pwm": '+ '%.5f' % pwm + ' }}' )
         self.sendEnergyPayload(payload)
 
     def sendEnergyPayload(self, payload):
@@ -492,7 +502,7 @@ class Controller:
         self.defrostTemp = int(defrost["temp"])
 
         self.status = 1                 # will be updated on restart
-        self.setpoint = 34              # will be updated on restart
+        self.setpoint = 70              # will be updated on restart
         self.temp_interval = tempres     # 15 min
         self.energy_interval = tempres      # 15 min
 
